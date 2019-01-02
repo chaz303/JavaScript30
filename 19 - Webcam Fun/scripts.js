@@ -4,6 +4,10 @@ const ctx = canvas.getContext('2d');
 const strip = document.querySelector('.strip');
 const snap = document.querySelector('.snap');
 
+let sliderx = document.querySelector('.testx');
+let slidery = document.querySelector('.testy');
+
+
 function getVideo(){
   navigator.mediaDevices.getUserMedia({ video: true, audio: false})
     .then(localMediaStream => {
@@ -28,14 +32,16 @@ function paintToCanvas() {
     let pixels = ctx.getImageData(0, 0, width, height);
 //    pixels = greenScreen(pixels);
 //    pixels = inversion(pixels);
-  //      pixels = threeWaySplit(pixels);
-    pixels = twoWaySplit(pixels);
+//    pixels = twoWaySplit(pixels);
+//    pixels = threeWaySplit(pixels);
 //    pixels = solarization(pixels);
 //    pixels = solarmod(pixels);
 //    pixels = redShift(pixels);
-//    pixels = glitch(pixels);
+    pixels = glitch(pixels);
 //    pixels = colorShake(pixels);
 //    pixels = shakeEffect(pixels);
+    pixels = verticalStripe(pixels);
+    pixels = horizontalStripe(pixels);
     //    ctx.globalAlpha = 0.8;
     ctx.putImageData(pixels, 0, 0);
   }, 16);
@@ -107,6 +113,49 @@ function inversion(pixels) {
     pixels.data[i + 0] = (pixels.data[i + 0] * -1) + 255;
     pixels.data[i + 1] = (pixels.data[i + 1] * -1) + 255;
     pixels.data[i + 2] = (pixels.data[i + 2] * -1) + 255;
+  }
+  return pixels;
+}
+
+function verticalStripe(pixels) {
+    let horizontalCount = 0;
+    let striper = 0;
+  for(let i = 0; i < pixels.data.length; i+=4) {
+    if (striper == sliderx.value) {
+      pixels.data[i + 0] = (pixels.data[i + 0]);
+      pixels.data[i + 1] = (pixels.data[i + 1] * 0.33);
+      pixels.data[i + 2] = (pixels.data[i + 2]);
+      striper = 0;
+    } else {
+      striper++;
+    }
+    horizontalCount++;
+    if (horizontalCount >= video.videoWidth){
+      horizontalCount = 0;
+      striper = 0;
+    }
+  }
+  return pixels;
+}
+
+function horizontalStripe(pixels) {
+    let horizontalCount = 0;
+    let verticalCount = 0;
+    let striper = 0;
+  for(let i = 0; i < pixels.data.length; i+=4) {
+    if (striper == slidery.value) {
+      pixels.data[i + 0] = (pixels.data[i + 0] * 0.33);
+      pixels.data[i + 1] = (pixels.data[i + 1]);
+      pixels.data[i + 2] = (pixels.data[i + 2]);
+    }
+    horizontalCount++;
+    if (horizontalCount >= video.videoWidth){
+      horizontalCount = 0;
+      verticalCount++;
+      striper++;
+      if (striper > slidery.value){striper = 0};
+      //console.log(striper);
+    }
   }
   return pixels;
 }
